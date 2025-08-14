@@ -9,7 +9,7 @@ from core.scoring.custom_score import utility_score
 from core.scoring.etf_recommendation_evaluation import top_recommend
 from core.data_processing.risk_free_rates import fetch_risk_free_boc
 from visualization.visualizing_etf_metrics import plot_risk_return_user
-from core.data_processing.Etf_Data import get_etf_data, filter_etf_data
+from core.data_processing.etf_data import get_etf_data
 from core.analysis.max_drawdown import calculate_max_drawdown
 from datetime import datetime
 import pandas as pd

@@ -1,6 +1,6 @@
 import pandas as pd
 
-def sharpe_score(etf_df, time_horizon, risk_free_df):
+def sharpe_score(etf_df, time_horizon, risk_free_df, amount_recommend=5):
     """
     Calculates the Sharpe Ratio for each ETF and sorts them by the score.
 
@@ -36,4 +36,5 @@ def sharpe_score(etf_df, time_horizon, risk_free_df):
     df['ExcessReturn'] = df[growth_col] - avg_rf
     df['Sharpe'] = df['ExcessReturn'] / df[std_col]
 
-    return df.sort_values('Sharpe', ascending=False)
+    return df.sort_values('Sharpe', ascending=False).head(amount_recommend)
+ 
