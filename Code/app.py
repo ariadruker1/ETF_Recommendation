@@ -1,8 +1,3 @@
-# web_app/app.py
-import sys
-import os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 import streamlit as st
 import pandas as pd
 from datetime import datetime
@@ -197,7 +192,7 @@ elif st.session_state.step == 4:
 # ---------- Step 5 ----------
 elif st.session_state.step == 5:
     st.subheader("ETF Track Record")
-    st.markdown("<small style='color:gray;'>Older ETFs have a known performance history.</small>", unsafe_allow_html=True)
+    st.markdown("<small style='color:gray;'>The older the ETF, the more we know about its performance history.</small>", unsafe_allow_html=True)
     options = ["Select ETF Age Minimum", 1,2,3,4,5]
     choice = st.selectbox("Minimum ETF age?", options, format_func=lambda x:{
         "Select ETF Age Minimum":"Select ETF Age Minimum",
@@ -268,4 +263,4 @@ elif st.session_state.step == 6:
                 st.rerun()
 
 # ---------- Footer ----------
-st.markdown("<small style='color:gray; margin-top:2rem;'>*Educational only. Not financial advice.*</small>", unsafe_allow_html=True)
+st.markdown("<small style='color:gray; margin-top:2rem;'>*For educational use only. Not financial advice.</small>", unsafe_allow_html=True)
