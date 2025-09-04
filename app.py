@@ -40,64 +40,55 @@ if 'user_profile' not in st.session_state:
     st.session_state.user_profile = [None] * 6
 
 def create_etf_performance_chart(etf_recommend_df, data, chart_title):
+    import pandas as pd
+    import plotly.graph_objects as go
+
     fig = go.Figure()
     etf_tickers = etf_recommend_df['Ticker'].tolist()
     end_date = pd.Timestamp(datetime.now())
 
-    # Find the earliest available date for all recommended ETFs
-    min_start_dates = []
+    # Step 1: Find first available date for each ETF
+    first_dates = []
     for ticker in etf_tickers:
-        try:
-            prices = data[(ticker, 'Adj Close')].dropna()
-        except (KeyError, TypeError):
-            try:
-                prices = data[ticker].dropna()
-            except (KeyError, TypeError):
-                continue
-        if not prices.empty:
-            min_start_dates.append(prices.index.min())
+        if (ticker, 'Adj Close') in data.columns:
+            series = data[(ticker, 'Adj Close')].dropna()
+            if not series.empty:
+                first_dates.append(series.index.min())
 
-    # Use the latest of the earliest dates so all ETFs have data from this point
-    start_date = max(min_start_dates) if min_start_dates else end_date - pd.DateOffset(years=1)
+    if not first_dates:
+        return fig  # No data to plot
 
+    # Step 2: Youngest ETF determines common start date
+    start_date = max(first_dates)
+
+    # Step 3: Plot each ETF starting from the common start date
     for ticker in etf_tickers:
-        try:
-            price_series = data.get((ticker, 'Adj Close'))
-            if price_series is None or price_series.empty:
-                price_series = data.get(ticker)
-            if price_series is None or price_series.empty:
-                continue
-        except KeyError:
-            continue
-        if price_series is None or price_series.empty:
+        if (ticker, 'Adj Close') not in data.columns:
             continue
 
-        period_prices = price_series.loc[start_date:end_date]
-        if period_prices.empty:
+        series = data[(ticker, 'Adj Close')].dropna()
+        # Slice to common range
+        series = series.loc[series.index >= start_date]
+        if series.empty:
             continue
 
-        normalized_prices = 100 * period_prices / period_prices.iloc[0]
-        etf_metrics = etf_recommend_df[etf_recommend_df['Ticker'] == ticker].iloc[0]
-
-        # Use actual column names in etf_metrics
-        growth_col = [c for c in etf_metrics.index if "Annual_Growth" in c][0]
-        std_col = [c for c in etf_metrics.index if "Standard_Deviation" in c][0]
+        # Normalize
+        normalized = 100 * series / series.iloc[0]
 
         hover_text = [
-            f"<b>{ticker}</b><br>Date: {date.strftime('%Y-%m-%d')}<br>"
-            f"Annual Growth: {etf_metrics[growth_col]:.2f}%<br>"
-            f"Standard Deviation: {etf_metrics[std_col]:.2f}%"
-            for date in normalized_prices.index
+            f"<b>{ticker}</b><br>Date: {idx.strftime('%Y-%m-%d')}<br>"
+            f"Normalized Price: {val:.2f}"
+            for idx, val in zip(normalized.index, normalized.values)
         ]
 
         fig.add_trace(go.Scatter(
-            x=normalized_prices.index,
-            y=normalized_prices.values,
+            x=normalized.index,
+            y=normalized.values,
             mode='lines',
             name=ticker,
-            line=dict(width=2),
             hovertemplate='%{text}<extra></extra>',
-            text=hover_text
+            text=hover_text,
+            line=dict(width=2)
         ))
 
     fig.update_layout(
