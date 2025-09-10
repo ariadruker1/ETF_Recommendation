@@ -106,7 +106,7 @@ if st.session_state.step == 0:
     st.markdown("""
         <span style='color:gray;'>
         ℹ️ An ETF (Exchange-Traded Fund) is an investment that holds a mix of assets such as stocks, bonds, or other investments, 
-        and trades on the stock market like a single stock. Because it combines many assets, it spreads out risk and is generally 
+        and trades on the stock market like a single stock. Because it combines many assets, it is generally 
         less risky than investing in a single stock.
         </span>
         <hr>
@@ -312,9 +312,11 @@ elif st.session_state.step == 6:
             risk_free_data = fetch_risk_free_boc("1995-01-01")
             etf_sharpe = sharpe_score(etf_metrics, user[USER_TIME_HORIZON], risk_free_data)
 
+            st.subheader(f"📈 Recommendations for Profile: Time: {user[USER_TIME_HORIZON]}")
+            st.write("DEBUG user_profile:", user)
+            st.write(f"PROFILE: Time Horizon: {user[USER_TIME_HORIZON]}")
             st.success("✅ Analysis complete!")
 
-            st.subheader("📈 Recommendations")
             if not etf_sharpe.empty:
                 st.plotly_chart(create_etf_performance_chart(etf_sharpe, data,
                                                             f"Top 5 ETFs:"), width='stretch')
