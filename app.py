@@ -312,10 +312,12 @@ elif st.session_state.step == 6:
             risk_free_data = fetch_risk_free_boc("1995-01-01")
             etf_sharpe = sharpe_score(etf_metrics, user[USER_TIME_HORIZON], risk_free_data)
 
-            st.subheader(f"📈 Recommendations for Profile: Time: {user[USER_TIME_HORIZON]}")
-            st.write("DEBUG user_profile:", user)
-            st.write(f"PROFILE: Time Horizon: {user[USER_TIME_HORIZON]}")
             st.success("✅ Analysis complete!")
+
+            st.subheader("📈 Recommendations")
+            
+            st.write(f"""PROFILE SUMMARY: Time Horizon: {user[USER_TIME_HORIZON]}y, Desired Growth: {user[USER_DESIRED_GROWTH]}%,
+                     Fluctuations: {user[USER_FLUCTUATION]}%, Worst Case Drop: {user[USER_WORST_CASE]}%, Minimum Age ETF: {user[USER_MINIMUM_ETF_AGE]}y""")
 
             if not etf_sharpe.empty:
                 st.plotly_chart(create_etf_performance_chart(etf_sharpe, data,
