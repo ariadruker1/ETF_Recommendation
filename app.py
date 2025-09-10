@@ -12,7 +12,7 @@ from config.constants import (
     USER_WORST_CASE, USER_MINIMUM_ETF_AGE
 )
 from core.scoring.sharpe_recommendation import sharpe_score
-from visualization.etf_performance_chart import create_etf_performance_chart
+from visuals.etf_performance import create_etf_performance_chart
 
 # Global styles
 st.markdown("""
@@ -67,7 +67,6 @@ desired_growth_options = [2, 5, 10, 16, 21]
 fluctuation_options = [5, 10, 15, 20, 35]
 worse_case_options = [15, 25, 35, 45, 100]
 minimum_etf_age_options = [10, 5, 3, 1, 0]
-risk_preference_options = [[3,1],[2,1],[1,1],[1,2],[1,3]]
 
 # ---------- QUESTION STEPS ----------
 if 1 <= st.session_state.step <= 5:
@@ -234,7 +233,6 @@ elif st.session_state.step == 5:
                 st.warning("Please select an ETF age minimum.")
             else:
                 st.session_state.user_profile[USER_MINIMUM_ETF_AGE] = minimum_etf_age_options[choice-1]
-                st.session_state.user_profile[USER_RISK_PREFERENCE] = risk_preference_options[choice-1]
                 st.session_state.step = 6
                 st.rerun()
 
@@ -257,12 +255,19 @@ elif st.session_state.step == 6:
 
             st.subheader("📈 Recommendations")
             
-            st.write(f"""PROFILE SUMMARY: Time Horizon: {user[USER_TIME_HORIZON]}y, Desired Growth: {user[USER_DESIRED_GROWTH]}%,
-                     Fluctuations: {user[USER_FLUCTUATION]}%, Worst Case Drop: {user[USER_WORST_CASE]}%, Minimum Age ETF: {user[USER_MINIMUM_ETF_AGE]}y""")
+            st.markdown(
+                f"""
+            **PROFILE SUMMARY:**<br>
+            Time: **{user[USER_TIME_HORIZON]}**y &nbsp;|&nbsp;
+            Desired Growth: **{user[USER_DESIRED_GROWTH]}%** &nbsp;|&nbsp;
+            Fluctuations: **{user[USER_FLUCTUATION]}%** &nbsp;|&nbsp;
+            Worst Case Drop: **{user[USER_WORST_CASE]}%** &nbsp;|&nbsp;
+            Minimum Age ETF: **{user[USER_MINIMUM_ETF_AGE]}**y
+            """, unsafe_allow_html=True)
 
             if not etf_sharpe.empty:
                 st.plotly_chart(create_etf_performance_chart(etf_sharpe, data,
-                                                            f"Top 5 ETFs:"), width='stretch')
+                                                            f"Top 5 ETFs:"), use_container_width=True)
             else:
                 st.warning("No Sharpe-based ETFs found.")
 
@@ -274,18 +279,7 @@ elif st.session_state.step == 6:
                 sharpe_simple = etf_sharpe[['Ticker', growth_col, std_col]].reset_index(drop=True)
                 sharpe_simple.columns = ['Ticker','Annual Growth (%)','Standard Deviation (%)']
 
-                # Create HTML table with links
-                table_html = "<table>"
-                table_html += "<tr><th>Ticker</th><th>Annual Growth (%)</th><th>Standard Deviation (%)</th></tr>"
-                for _, row in sharpe_simple.iterrows():
-                    ticker = row['Ticker']
-                    growth = row['Annual Growth (%)']
-                    std = row['Standard Deviation (%)']
-                    link = f"https://ca.finance.yahoo.com/quote/{ticker}/"
-                    table_html += f"<tr><td><a href='{link}' target='_blank'>{ticker}</a></td><td>{growth}</td><td>{std}</td></tr>"
-                table_html += "</table>"
-
-                st.markdown(table_html, unsafe_allow_html=True)
+                st.dataframe(sharpe_simple, use_container_width=True)
             else:
                 st.write("No data available")
 
